@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>|| प्रज्ञासूची || - Smart Grocery</title>
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="manifest" href="./manifest.json">
+    <meta name="theme-color" content="#1e1b4b" media="(prefers-color-scheme: dark)">
+    <meta name="theme-color" content="#f8fafc">
+
+    <link rel="stylesheet" href="./styles.css">
+    <script src="./env.js"></script>
+
+</head>
+<body class="text-slate-800">
+
+    <!-- AI Loading Overlay -->
+    <div id="aiLoadingOverlay" class="hidden fixed inset-0 bg-slate-900/85 backdrop-blur-sm z-50 flex flex-col items-center justify-center text-white">
+        <div class="loader mb-5" style="width:60px;height:60px;border-width:5px"></div>
+        <h2 class="text-2xl font-bold mb-2">मशीन बिल पढ़ रही है...</h2>
+        <p class="text-slate-300 text-sm">कृपया 5-10 सेकंड इंतज़ार करें ⏳</p>
+    </div>
+
+    <!-- Custom Modal -->
+    <div id="customModal" class="hidden fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[100] flex items-center justify-center px-4 opacity-0 smooth">
+        <div id="modalContent" class="bg-white rounded-3xl shadow-2xl p-7 max-w-sm w-full scale-95 smooth border border-slate-100">
+            <div id="modalIcon" class="text-5xl mb-4 text-center">🔔</div>
+            <h3 id="modalTitle" class="text-xl font-black text-slate-800 mb-2 text-center"></h3>
+            <p id="modalMessage" class="text-slate-500 mb-5 text-center font-medium leading-relaxed text-sm"></p>
+            <input type="text" id="modalInput" class="hidden w-full px-4 py-3 bg-slate-50 border-2 border-slate-200 rounded-xl text-slate-800 font-bold focus:outline-none focus:border-orange-400 mb-5 smooth text-center" placeholder="...">
+            <div class="flex gap-3 justify-center w-full" id="modalButtons"></div>
+        </div>
+    </div>
+
+    <!-- Scroll to top -->
+    <button id="scrollTopBtn" onclick="window.scrollTo({top:0,behavior:'smooth'})" aria-label="ऊपर जाएं">▲</button>
+
+    <div class="max-w-5xl mx-auto px-4 sm:px-6 pt-4 no-print">
+
+        <!-- Navbar -->
+        <nav class="glass sticky top-0 z-40 rounded-2xl shadow-lg mb-6 p-3 flex flex-wrap justify-between items-center gap-2 animate-in animate-delay-1">
+            <div class="flex flex-wrap gap-2 items-center">
+                <button onclick="toggleLang()" id="langBtn" class="px-3 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold rounded-xl smooth text-xs">🔄 English</button>
+                <button onclick="toggleVratMode()" id="vratBtn" class="px-3 py-2 bg-purple-50 hover:bg-purple-100 text-purple-700 font-semibold rounded-xl smooth text-xs flex items-center gap-1.5">
+                    🪔 <span id="vratBtnText">व्रत मोड</span>
+                </button>
+                <label onclick="toggleDark()" id="themeBtn" class="theme-switch flex items-center gap-2 px-3 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold rounded-xl smooth text-xs cursor-pointer" aria-label="Theme toggle" role="switch" aria-checked="false">
+                    <span class="switch-track"><span class="switch-thumb"></span></span>
+                    <span id="themeBtnText">System</span>
+                </label>
+                <button id="installAppBtn" class="hidden px-4 py-2 bg-gradient-to-r from-orange-400 to-orange-500 text-white font-bold rounded-xl shadow-lg shadow-orange-500/30 smooth animate-bounce text-xs">📱 Install</button>
+            </div>
+            <div class="flex items-center gap-2">
+                <div id="userInfo" class="hidden font-bold text-teal-700 bg-teal-50 px-3 py-2 rounded-xl text-xs border border-teal-100 max-w-[120px] truncate"></div>
+                <button id="loginBtn" class="px-4 py-2 bg-slate-800 hover:bg-slate-900 text-white font-semibold rounded-xl shadow-md smooth text-xs flex items-center gap-1.5">
+                    <img src="https://upload.wikimedia.org/wikipedia/commons/5/53/Google_%22G%22_Logo.svg" alt="G" class="w-4 h-4 bg-white rounded-full p-0.5"> <span id="loginBtnText">लॉगिन</span>
+                </button>
+                <button id="logoutBtn" class="hidden px-3 py-2 bg-slate-200 hover:bg-slate-300 text-slate-700 font-semibold rounded-xl smooth text-xs"><span id="logoutBtnText">लॉगआउट</span></button>
+            </div>
+        </nav>
+
+        <!-- Header -->
+        <header class="text-center mt-4 mb-8 animate-in animate-delay-2">
+            <div class="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-orange-400 to-rose-500 rounded-2xl mb-4 shadow-lg shadow-orange-500/30">
+                <span class="text-3xl">🛒</span>
+            </div>
+            <h1 class="text-4xl md:text-5xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-orange-500 to-rose-500 mb-1 tracking-tight py-1 leading-normal" id="mainTitle">|| प्रज्ञासूची ||</h1>
+            <p class="text-slate-500 font-medium text-base" id="subTitle">स्मार्ट और मॉडर्न डिजिटल किराना पर्ची</p>
+        </header>
+
+        <!-- AI Box -->
+        <div class="bg-white rounded-3xl shadow-sm border border-slate-100 p-5 mb-6 card-lift relative overflow-hidden animate-in animate-delay-3">
+            <div class="absolute -top-8 -right-8 w-28 h-28 bg-blue-50 rounded-full blur-2xl opacity-60"></div>
+            <h3 class="text-base font-bold text-slate-800 mb-4 flex items-center gap-2" id="aiBoxTitle">
+                <span class="bg-gradient-to-br from-blue-400 to-indigo-500 text-white p-2 rounded-xl text-sm">✨</span>
+                <span>AI से ऑटोमैटिक सामान जोड़ें</span>
+            </h3>
+            <div class="grid grid-cols-2 gap-3 mb-3 relative z-10">
+                <button onclick="startVoice()" class="py-3.5 bg-slate-50 hover:bg-red-50 border-2 border-slate-200 hover:border-red-300 text-slate-700 font-bold rounded-2xl smooth flex items-center justify-center gap-2 text-sm">
+                    <span class="text-lg">🎙️</span> <span id="voiceBtnText">बोलकर जोड़ें</span>
+                </button>
+                <button onclick="document.getElementById('cameraInput').click()" class="py-3.5 bg-slate-50 hover:bg-blue-50 border-2 border-slate-200 hover:border-blue-300 text-slate-700 font-bold rounded-2xl smooth flex items-center justify-center gap-2 text-sm">
+                    <span class="text-lg">📸</span> <span>बिल स्कैन (AI)</span>
+                </button>
+                <input type="file" id="cameraInput" accept="image/*" capture="environment" class="hidden" onchange="handleBillImage(event)">
+            </div>
+            <div class="relative z-10 flex gap-2">
+                <input type="text" id="aiTextInput" placeholder="सामान का नाम लिखें या पेस्ट करें..." class="w-full px-4 py-3 bg-slate-50 border-2 border-slate-200 rounded-xl text-slate-700 focus:outline-none focus:ring-2 focus:ring-orange-400 smooth text-sm" autocomplete="off">
+                <button onclick="processText()" class="px-5 py-3 bg-orange-500 hover:bg-orange-600 text-white font-bold rounded-xl shadow-md shadow-orange-500/20 smooth whitespace-nowrap text-sm" id="aiBtnText">जोड़ें</button>
+            </div>
+            <!-- Autocomplete suggestions -->
+            <div id="autoSuggest" class="hidden absolute z-50 left-5 right-5 bg-white border border-slate-200 rounded-xl shadow-xl mt-1 overflow-hidden" style="top:100%"></div>
+        </div>
+
+        <!-- Global Search -->
+        <div class="mb-6 relative animate-in animate-delay-4">
+            <span class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 text-lg">🔍</span>
+            <input type="text" id="globalSearch" placeholder="सामान खोजें... (जैसे: चाय, soap, आटा)" class="w-full pl-11 pr-4 py-3.5 rounded-2xl border-2 font-medium text-sm" oninput="searchItems(this.value)">
+        </div>
+
+        <!-- Shopping Bag -->
+        <div class="glass rounded-3xl shadow-lg border border-slate-200/60 p-5 mb-6 relative z-30">
+            <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 mb-4 pb-4 border-b border-slate-200/60">
+                <div class="flex items-center gap-3">
+                    <div class="bg-gradient-to-br from-emerald-400 to-teal-500 p-2.5 rounded-xl text-xl shadow-md">🛒</div>
+                    <div>
+                        <h2 class="text-xl font-extrabold text-slate-800" id="bagTitle">आपका थैला</h2>
+                        <p id="estTotal" class="text-sm font-bold text-emerald-600">💰 बिल: ₹ 0</p>
+                    </div>
+                </div>
+                <div class="flex items-center gap-2 w-full sm:w-auto">
+                    <div class="flex items-center gap-2 bg-white/60 px-3 py-2 rounded-xl border border-slate-200 flex-1 sm:flex-none">
+                        <label class="text-xs font-semibold text-slate-500 uppercase tracking-wide" id="budgetText">बजट:</label>
+                        <input type="number" id="budgetInput" oninput="updateBag()" placeholder="₹" class="w-20 bg-transparent font-bold text-slate-800 focus:outline-none text-sm">
+                    </div>
+                    <span id="budgetWarning" class="hidden items-center justify-center w-8 h-8 bg-red-100 text-red-600 rounded-full animate-bounce text-sm" title="बजट पार!" role="alert">⚠️</span>
+                </div>
+            </div>
+
+            <!-- Budget progress bar -->
+            <div id="budgetBarWrap" class="hidden mb-3">
+                <div class="budget-bar">
+                    <div id="budgetBarFill" class="budget-bar-fill bg-emerald-500" style="width:0%"></div>
+                </div>
+                <p id="budgetBarLabel" class="text-xs text-slate-500 mt-1 text-right font-semibold"></p>
+            </div>
+
+            <!-- Bag items container -->
+            <div id="shoppingBagContainer" class="flex flex-col gap-2 text-sm font-medium mb-4 min-h-[40px] max-h-80 overflow-y-auto pr-1"></div>
+
+            <!-- Bag actions -->
+            <div class="flex flex-wrap gap-2 w-full pt-2">
+                <button onclick="speakBag()" class="flex-1 min-w-[80px] px-3 py-3 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-xl smooth flex items-center justify-center gap-1.5 text-sm" id="speakBtnText">🔊 सुनें</button>
+                <button onclick="shareOnWhatsApp()" class="flex-1 min-w-[80px] px-3 py-3 bg-[#25D366]/10 hover:bg-[#25D366]/20 text-[#128C7E] font-bold rounded-xl smooth flex items-center justify-center gap-1.5 text-sm" id="waBtnText">📱 WhatsApp</button>
+                <button onclick="openPrintView()" class="flex-1 min-w-[80px] px-3 py-3 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 font-bold rounded-xl smooth flex items-center justify-center gap-1.5 text-sm" id="printBtnText">📝 पर्ची</button>
+                <button id="saveCloudListBtn" class="flex-1 min-w-[80px] px-3 py-3 bg-blue-50 hover:bg-blue-100 text-blue-700 font-bold rounded-xl smooth hidden items-center justify-center gap-1.5 text-sm">💾 सेव</button>
+                <button onclick="clearBag()" class="px-4 py-3 bg-rose-50 hover:bg-rose-100 text-rose-600 font-bold rounded-xl smooth text-sm" title="खाली करें" aria-label="थैला खाली करें">🗑️</button>
+            </div>
+        </div>
+
+        <!-- Quick actions -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-6">
+            <button id="loadCloudListBtn" class="w-full px-5 py-4 bg-white border border-slate-200 hover:border-blue-400 hover:bg-blue-50 text-blue-600 font-bold rounded-2xl shadow-sm smooth hidden items-center justify-center gap-2 text-sm">📂 मेरी सेव लिस्ट</button>
+            <button onclick="addNewCustomItem()" class="w-full px-5 py-4 bg-white border border-slate-200 hover:border-orange-400 hover:bg-orange-50 text-orange-600 font-bold rounded-2xl shadow-sm smooth flex items-center justify-center gap-2 text-sm" id="addCustomBtnText">➕ नया सामान खुद लिखें</button>
+        </div>
+
+        <!-- Saved lists panel -->
+        <div id="savedListsContainer" class="hidden bg-white border border-slate-200 p-5 rounded-3xl shadow-sm mb-6">
+            <h3 class="text-lg font-bold text-slate-800 mb-4">📂 सेव की गई लिस्ट्स:</h3>
+            <div id="savedListsArea" class="flex flex-col gap-3"></div>
+        </div>
+
+        <!-- Skeleton loaders -->
+        <div id="skeletonContainer" class="flex flex-col gap-4">
+            <div class="skeleton h-24"></div>
+            <div class="skeleton h-24"></div>
+            <div class="skeleton h-24"></div>
+        </div>
+
+        <!-- Categories -->
+        <div id="categoriesContainer" class="flex flex-col gap-5"></div>
+    </div>
+
+    <!-- Print Area -->
+    <div id="printArea" class="hidden min-h-screen bg-white p-4 md:p-8 text-black">
+        <div class="max-w-2xl mx-auto">
+            <div class="text-center mb-6 border-b-2 border-slate-800 pb-4">
+                <div class="text-4xl mb-2">🛒</div>
+                <h1 class="text-3xl font-black">|| प्रज्ञासूची ||</h1>
+                <p class="text-lg font-bold mt-1 text-slate-600" id="printSubTitle">किराना व सब्जी की पर्ची</p>
+                <div class="flex justify-between text-sm font-bold mt-3 text-slate-500">
+                    <span id="pdfDate">तारीख: </span>
+                    <span id="pdfTotalCount">कुल सामान: </span>
+                </div>
+            </div>
+            <div id="pdfTableContainer"></div>
+            <div class="mt-5 text-right font-black text-xl pr-4 border-t border-slate-300 pt-3" id="pdfEstTotal">अंदाज़न बिल: ₹ 0</div>
+            <div class="mt-8 flex flex-wrap justify-center gap-3 no-print">
+                <button onclick="window.print()" class="px-5 py-3 bg-slate-800 text-white font-bold rounded-xl hover:bg-slate-900">🖨️ Print / Save PDF</button>
+                <button onclick="closePrintView()" class="px-5 py-3 bg-slate-200 text-slate-800 font-bold rounded-xl hover:bg-slate-300" id="backBtnText">← पीछे जाएं</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="./app.js"></script>
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/12.14.0/firebase-app.js";
+    import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/12.14.0/firebase-auth.js";
+    import { getFirestore, collection, addDoc, getDocs, doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/12.14.0/firebase-firestore.js";
+
+    const firebaseConfig = window.APP_CONFIG?.FIREBASE_CONFIG || {
+        apiKey:"YOUR_FIREBASE_API_KEY",
+        authDomain:"YOUR_FIREBASE_AUTH_DOMAIN",
+        projectId:"YOUR_FIREBASE_PROJECT_ID",
+        storageBucket:"YOUR_FIREBASE_STORAGE_BUCKET",
+        messagingSenderId:"YOUR_FIREBASE_MESSAGING_SENDER_ID",
+        appId:"YOUR_FIREBASE_APP_ID"
+    };
+
+    if(!firebaseConfig.apiKey) {
+        showCustomAlert("Firebase config missing", "Firebase settings are not available. Check y/env.js or the fallback config.", "error");
+    }
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
+    const provider = new GoogleAuthProvider();
+
+    window.saveToCloud = async function(state) {
+        if(!auth.currentUser) return;
+        try { await setDoc(doc(db,"userGroceryLists",auth.currentUser.uid),{ savedList:JSON.stringify(state), lastUpdated:new Date() }); }
+        catch(e) { console.error("Cloud sync error:", e); }
+    };
+    window.loadFromCloud = async function() {
+        if(!auth.currentUser) return;
+        try {
+            const snap = await getDoc(doc(db,"userGroceryLists",auth.currentUser.uid));
+            if(snap.exists()) {
+                let p = JSON.parse(snap.data().savedList);
+                Object.keys(p).forEach(k => { if(appState[k]) appState[k]=p[k]; });
+                window.renderCategories();
+            }
+        } catch(e) { console.error("Cloud load error:", e); }
+    };
+
+    document.getElementById('loginBtn').addEventListener('click', async () => {
+        if(window.location.protocol === 'file:') {
+            showCustomAlert("वॉरनिंग", "Firebase लॉगिन ब्राउज़र पर तभी चलेगा जब आप ऐप को http या https पर चलाएँ।", "error");
+            return;
+        }
+        try {
+            await signInWithPopup(auth, provider);
+        } catch (e) {
+            console.error('Login failed', e);
+            showCustomAlert("Login failed", e.message || "Unable to sign in.", "error");
+        }
+    });
+    document.getElementById('logoutBtn').addEventListener('click', async () => {
+        try {
+            await signOut(auth);
+        } catch (e) {
+            console.error('Logout failed', e);
+            showCustomAlert("Logout failed", e.message || "Unable to sign out.", "error");
+        }
+    });
+
+    document.getElementById('saveCloudListBtn').addEventListener('click', () => {
+        if(!auth.currentUser) return;
+        showCustomPrompt("लिस्ट सेव करें","इस लिस्ट का नाम लिखें:","June Grocery", async (name) => {
+            try {
+                await addDoc(collection(db,"users",auth.currentUser.uid,"savedLists"),{ name, data:JSON.stringify(appState), date:new Date().toLocaleDateString('hi-IN') });
+                showCustomAlert("सफल","✅ लिस्ट सेव हो गई!","success");
+            } catch(e) { console.error(e); }
+        });
+    });
+
+    document.getElementById('loadCloudListBtn').addEventListener('click', async () => {
+        if(!auth.currentUser) return;
+        const container = document.getElementById('savedListsContainer');
+        container.classList.toggle('hidden');
+        const area = document.getElementById('savedListsArea');
+        area.innerHTML = '<div class="text-center py-4"><div class="loader inline-block" style="width:28px;height:28px;border-color:#e2e8f0;border-top-color:#f97316"></div></div>';
+        try {
+            const qs = await getDocs(collection(db,"users",auth.currentUser.uid,"savedLists"));
+            area.innerHTML = '';
+            if(qs.empty) { area.innerHTML='<p class="text-slate-500 font-bold text-sm text-center py-2">कोई पुरानी लिस्ट नहीं मिली।</p>'; return; }
+            qs.forEach(d => {
+                let data = d.data();
+                area.innerHTML += `<div class="flex justify-between items-center bg-slate-50 p-3 rounded-xl border border-slate-200">
+                    <div><p class="font-bold text-slate-800 text-sm">${data.name}</p><p class="text-xs text-slate-400">${data.date}</p></div>
+                    <button class="bg-orange-100 hover:bg-orange-500 hover:text-white text-orange-700 font-bold px-4 py-2 rounded-lg text-sm smooth" onclick="window.loadSpecificList('${data.data.replace(/'/g,"\\'")}')">खोलें</button>
+                </div>`;
+            });
+        } catch(e) { console.error(e); }
+    });
+
+    window.loadSpecificList = function(json) {
+        let p = JSON.parse(json);
+        Object.keys(p).forEach(k => { if(appState[k]) appState[k]=p[k]; });
+        window.renderCategories();
+        document.getElementById('savedListsContainer').classList.add('hidden');
+        showCustomAlert("सफल","पुरानी लिस्ट खुल गई! 🎉","success");
+    };
+
+    onAuthStateChanged(auth, user => {
+        const login = document.getElementById('loginBtn');
+        const logout = document.getElementById('logoutBtn');
+        const save = document.getElementById('saveCloudListBtn');
+        const load = document.getElementById('loadCloudListBtn');
+        const info = document.getElementById('userInfo');
+        if(user) {
+            login.classList.add('hidden'); logout.classList.remove('hidden');
+            save.classList.remove('hidden'); save.classList.add('flex');
+            load.classList.remove('hidden'); load.classList.add('flex');
+            let name = user.displayName ? user.displayName.split(" ")[0] : "User";
+            window.currentUserName = name;
+            info.innerText = `${lang==='hi'?'नमस्ते':'Hello'}, ${name}!`;
+            info.classList.remove('hidden');
+            window.loadFromCloud();
+        } else {
+            login.classList.remove('hidden'); logout.classList.add('hidden');
+            save.classList.add('hidden'); save.classList.remove('flex');
+            load.classList.add('hidden'); load.classList.remove('flex');
+            info.classList.add('hidden'); window.currentUserName = '';
+        }
+    });
+    </script>
+</body>
+</html>
