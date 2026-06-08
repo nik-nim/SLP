@@ -8,6 +8,7 @@
     const themeLabel = document.getElementById('themeBtnText');
     const prefersDark = window.matchMedia('(prefers-color-scheme: dark)');
     const applyTheme = (mode) => {
+        const systemDark = prefersDark.matches;
         if(mode === 'dark') {
             document.documentElement.classList.add('dark-mode');
             document.documentElement.classList.remove('light-mode');
@@ -15,36 +16,45 @@
             if(themeBtn) themeBtn.classList.remove('light-mode');
             if(themeBtn) themeBtn.setAttribute('aria-checked', 'true');
             if(themeLabel) themeLabel.textContent = 'Dark';
-        } else {
+        } else if(mode === 'light') {
             document.documentElement.classList.remove('dark-mode');
             document.documentElement.classList.add('light-mode');
             if(themeBtn) themeBtn.classList.remove('dark-mode');
             if(themeBtn) themeBtn.classList.add('light-mode');
             if(themeBtn) themeBtn.setAttribute('aria-checked', 'false');
             if(themeLabel) themeLabel.textContent = 'Light';
+        } else {
+            document.documentElement.classList.remove('dark-mode');
+            document.documentElement.classList.remove('light-mode');
+            if(themeBtn) themeBtn.classList.remove('dark-mode');
+            if(themeBtn) themeBtn.classList.remove('light-mode');
+            if(themeBtn) themeBtn.setAttribute('aria-checked', systemDark ? 'true' : 'false');
+            if(themeLabel) themeLabel.textContent = 'Auto';
         }
     };
 
-    if(darkForced === 'dark') applyTheme('dark');
-    else if(darkForced === 'light') applyTheme('light');
-    else applyTheme(prefersDark.matches ? 'dark' : 'light');
+    if(darkForced === 'dark' || darkForced === 'light') applyTheme(darkForced);
+    else applyTheme('auto');
 
-    prefersDark.addEventListener('change', (e) => {
+    prefersDark.addEventListener('change', () => {
         if(!localStorage.getItem('darkMode')) {
-            applyTheme(e.matches ? 'dark' : 'light');
+            applyTheme('auto');
         }
     });
 
     window.toggleDark = function() {
-        const isDark = document.documentElement.classList.contains('dark-mode');
-        if(isDark) {
+        if(darkForced === 'dark') {
             darkForced = 'light';
-            applyTheme('light');
             localStorage.setItem('darkMode', 'light');
+            applyTheme('light');
+        } else if(darkForced === 'light') {
+            darkForced = null;
+            localStorage.removeItem('darkMode');
+            applyTheme('auto');
         } else {
             darkForced = 'dark';
-            applyTheme('dark');
             localStorage.setItem('darkMode', 'dark');
+            applyTheme('dark');
         }
     }
 
