@@ -1,29 +1,51 @@
 # PragyaSuchi Grocery App
 
-A Hindi/English smart grocery list PWA built as a static Firebase-hosted app.
+A Hindi/English smart grocery list PWA built for Firebase hosting and improved offline/mobile usage.
 
-## What was updated
-- Extracted inline CSS from `y/index.html` into `y/styles.css`
-- Extracted inline JavaScript from `y/index.html` into `y/app.js`
-- Added runtime environment support via `y/env.example.js`
-- Added `.env.example` and updated `.gitignore` to ignore local env files
+## What is included
+- `y/index.html`: main app shell and UI markup
+- `y/styles.css`: modern minimalist theming, animations, and responsive styling
+- `y/app.js`: app behavior, theme toggle, login/logout, list rendering, voice/AI input, Firebase saving, and print view
+- `y/env.js`: local runtime config file for private API keys and Firebase settings
+- `y/env.example.js`: safe template to copy for your own environment values
+- `y/manifest.json`: PWA metadata for installability
+- `y/sw.js`: service worker for offline caching
+- `.gitignore`: ignores local runtime secrets and environment files
+
+## What was improved
+- Separated inline HTML/CSS/JS into clean source files
+- Added safe environment handling for API keys
+- Added dark/light theme toggle with persistence
+- Added a modern glassmorphism UI with motion and hover effects
+- Added Firebase login and cloud list save/load scaffolding
+- Added GitHub repo setup and cleaned secret exposure
+- Removed duplicate file and cleaned up project structure
 
 ## Environment setup
 1. Copy `y/env.example.js` to `y/env.js`.
-2. Add your `GEMINI_API_KEY` in `y/env.js`.
-3. Optionally customize `FIREBASE_CONFIG` inside `y/env.js`.
+2. Replace the placeholder values with your own keys.
+   - `GEMINI_API_KEY`
+   - `FIREBASE_CONFIG.apiKey`
+   - `FIREBASE_CONFIG.authDomain`
+   - `FIREBASE_CONFIG.projectId`
+   - `FIREBASE_CONFIG.storageBucket`
+   - `FIREBASE_CONFIG.messagingSenderId`
+   - `FIREBASE_CONFIG.appId`
+3. Open `y/index.html` in a browser or deploy on Firebase.
 
-## Notes
-- `y/env.js` is ignored by git so private keys remain local.
-- `app.js` will automatically load `env.js` if present.
+## Security notes
+- Keep `y/env.js` local and do not commit it with real secrets.
+- The repository is safe for GitHub as long as no real API keys are included in tracked files.
+- A private repo helps with access control, but removing secrets is the primary safety step.
+
+## Optional local commands
+```powershell
+cd "c:\Users\Nim\Desktop\New_folder\grocery project"
+# Run app locally by using a static file server, or use Firebase Hosting.
+```
 
 ## Suggested improvements
-- Add a build step with bundling (Vite, Webpack, or Parcel) to better manage assets.
-- Move the Gemini bill scan API call to a secure backend service instead of client-side.
-- Add stronger validation and sanitization for saved list loading.
-- Improve the item parser to better handle quantities and Hindi/English mixed text.
-- Add unit tests for core list and budget logic.
-- Add Firebase rules or authentication checks for saved lists.
-
-## Git note
-- Git was not available in this environment, so a local repo initialization and remote GitHub creation could not be performed here.
+- Move Gemini requests to a secure backend function.
+- Improve AI item parsing and error handling.
+- Add offline-first caching for categories and lists.
+- Add mobile-optimized list interactions and accessible focus states.
