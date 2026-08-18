@@ -2,6 +2,12 @@
     // ⚠️ Security: Move GEMINI_API_KEY to a Firebase Cloud Function in production
     const GEMINI_API_KEY = window.APP_CONFIG?.GEMINI_API_KEY || localStorage.getItem('GEMINI_API_KEY') || "";
 
+    let lang = 'hi';
+    const themeModeLabels = {
+        hi: { auto: 'ऑटो', dark: 'डार्क', light: 'लाइट' },
+        en: { auto: 'Auto', dark: 'Dark', light: 'Light' }
+    };
+
     // ===== DARK MODE =====
     let darkForced = localStorage.getItem('darkMode');
     const themeBtn = document.getElementById('themeBtn');
@@ -15,21 +21,21 @@
             if(themeBtn) themeBtn.classList.add('dark-mode');
             if(themeBtn) themeBtn.classList.remove('light-mode');
             if(themeBtn) themeBtn.setAttribute('aria-checked', 'true');
-            if(themeLabel) themeLabel.textContent = 'Dark';
+            if(themeLabel) themeLabel.textContent = themeModeLabels[lang]?.dark || 'Dark';
         } else if(mode === 'light') {
             document.documentElement.classList.remove('dark-mode');
             document.documentElement.classList.add('light-mode');
             if(themeBtn) themeBtn.classList.remove('dark-mode');
             if(themeBtn) themeBtn.classList.add('light-mode');
             if(themeBtn) themeBtn.setAttribute('aria-checked', 'false');
-            if(themeLabel) themeLabel.textContent = 'Light';
+            if(themeLabel) themeLabel.textContent = themeModeLabels[lang]?.light || 'Light';
         } else {
             document.documentElement.classList.remove('dark-mode');
             document.documentElement.classList.remove('light-mode');
             if(themeBtn) themeBtn.classList.remove('dark-mode');
             if(themeBtn) themeBtn.classList.remove('light-mode');
             if(themeBtn) themeBtn.setAttribute('aria-checked', systemDark ? 'true' : 'false');
-            if(themeLabel) themeLabel.textContent = 'Auto';
+            if(themeLabel) themeLabel.textContent = themeModeLabels[lang]?.auto || 'Auto';
         }
     };
 
@@ -101,7 +107,6 @@
     }
 
     // ===== DATA =====
-    let lang = 'hi';
     let vratMode = false;
     let syncTimer = null;
     let searchQuery = '';
@@ -115,6 +120,12 @@
             aiInputPlaceholder:"सामान का नाम लिखें या पेस्ट करें...", aiBtn:"जोड़ें",
             bagTitle:"आपका थैला", budgetText:"बजट:", estBill:"💰 बिल: ₹", budgetWarn:"⚠️",
             speakBtn:"🔊 सुनें", waBtn:"📱 WhatsApp", printBtn:"📝 पर्ची", addCustomBtn:"➕ नया सामान खुद लिखें",
+            featureCards:[
+                { title:"ऑफ़लाइन रेडी", desc:"इंस्टॉल होने योग्य PWA सर्विस वर्कर कैशिंग और तेज़ लोड के साथ।" },
+                { title:"AI स्मार्ट इनपुट", desc:"वॉइस और बिल स्कैन विकल्प से सामान तेज़ी से जोड़ें।" },
+                { title:"क्लाउड सिंक", desc:"Google लॉगिन, अपनी लिस्ट को सुरक्षित रूप से सेव और लोड करें।" },
+                { title:"थीम कंट्रोल", desc:"ऑटो/डार्क/लाइट मोड स्विच और लोकल प्रेफरेंस सेव।" }
+            ],
             emptyBag:"थैला खाली है... नीचे से सामान चुनें।", printSubTitle:"किराना व सब्जी की पर्ची",
             backBtn:"← पीछे जाएं", dateText:"तारीख: ", totalItemsText:"कुल: ",
             voiceNotSupported:"माफ़ करें, यह ब्राउज़र आवाज़ सपोर्ट नहीं करता।",
@@ -132,6 +143,12 @@
             aiInputPlaceholder:"Type item names or paste list...", aiBtn:"Add",
             bagTitle:"Your Bag", budgetText:"Budget:", estBill:"💰 Bill: ₹", budgetWarn:"⚠️",
             speakBtn:"🔊 Listen", waBtn:"📱 WhatsApp", printBtn:"📝 Print", addCustomBtn:"➕ Add Custom Item",
+            featureCards:[
+                { title:"Offline Ready", desc:"Installable PWA with service worker caching and faster loads." },
+                { title:"AI Smart Input", desc:"Voice and bill scan options to add items quickly and naturally." },
+                { title:"Cloud Sync", desc:"Google login, save and load your grocery lists securely." },
+                { title:"Theme Control", desc:"Auto / dark / light mode switching with local preference saved." }
+            ],
             emptyBag:"Bag is empty... select items below.", printSubTitle:"Grocery & Veggie List",
             backBtn:"← Go Back", dateText:"Date: ", totalItemsText:"Total: ",
             voiceNotSupported:"Voice input not supported on this browser.",
@@ -391,6 +408,13 @@
         document.getElementById('logoutBtnText').innerText = t.logoutBtn;
         document.getElementById('globalSearch').placeholder = t.searchPlaceholder;
         if(window.currentUserName) document.getElementById('userInfo').innerText = `${t.helloText}, ${window.currentUserName}!`;
+        const cards = t.featureCards || [];
+        cards.forEach((card, index) => {
+            const titleEl = document.getElementById(`featureTitle${index+1}`);
+            const descEl = document.getElementById(`featureDesc${index+1}`);
+            if(titleEl) titleEl.innerText = card.title;
+            if(descEl) descEl.innerText = card.desc;
+        });
         renderCategories();
     }
 
@@ -766,7 +790,7 @@
         try {
             if(!GEMINI_API_KEY || GEMINI_API_KEY === "") {
                 document.getElementById('aiLoadingOverlay').classList.add('hidden');
-                showCustomAlert("API कुंजी गायब है", "कृपया y/env.js में GEMINI_API_KEY जोड़ें।", "error");
+                showCustomAlert("API कुंजी गायब है", "कृपया public/env.js में GEMINI_API_KEY जोड़ें।", "error");
                 return;
             }
             const reader = new FileReader();

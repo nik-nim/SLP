@@ -1,6 +1,7 @@
-// Copy this file to y/env.js and replace the placeholder values with your own keys.
-// Keep y/env.js local and do not commit it to source control.
+// This file loads runtime configuration values for the app.
+// Replace placeholders with your own keys before deploying.
 window.APP_CONFIG = {
+  GA_MEASUREMENT_ID: "YOUR_GA_MEASUREMENT_ID",
   GEMINI_API_KEY: "YOUR_GEMINI_API_KEY",
   FIREBASE_CONFIG: {
     apiKey: "YOUR_FIREBASE_API_KEY",

@@ -3,13 +3,13 @@
 A Hindi/English smart grocery list PWA built for Firebase hosting and improved offline/mobile usage.
 
 ## What is included
-- `y/index.html`: main app shell and UI markup
-- `y/styles.css`: modern minimalist theming, animations, and responsive styling
-- `y/app.js`: app behavior, theme toggle, login/logout, list rendering, voice/AI input, Firebase saving, and print view
-- `y/env.js`: local runtime config file for private API keys and Firebase settings
-- `y/env.example.js`: safe template to copy for your own environment values
-- `y/manifest.json`: PWA metadata for installability
-- `y/sw.js`: service worker for offline caching
+- `public/index.html`: main app shell and UI markup
+- `public/styles.css`: modern minimalist theming, animations, and responsive styling
+- `public/app.js`: app behavior, theme toggle, login/logout, list rendering, voice/AI input, Firebase saving, and print view
+- `public/env.js`: local runtime config file for private API keys and Firebase settings
+- `public/env.example.js`: safe template to copy for your own environment values
+- `public/manifest.json`: PWA metadata for installability
+- `public/sw.js`: service worker for offline caching
 - `.gitignore`: ignores local runtime secrets and environment files
 
 ## What was improved
@@ -22,8 +22,9 @@ A Hindi/English smart grocery list PWA built for Firebase hosting and improved o
 - Removed duplicate file and cleaned up project structure
 
 ## Environment setup
-1. Copy `y/env.example.js` to `y/env.js`.
+1. Copy `public/env.example.js` to `public/env.js`.
 2. Replace the placeholder values with your own keys.
+   - `GA_MEASUREMENT_ID` (optional Google Analytics ID in the format `G-XXXXXXXXXX`)
    - `GEMINI_API_KEY`
    - `FIREBASE_CONFIG.apiKey`
    - `FIREBASE_CONFIG.authDomain`
@@ -31,7 +32,9 @@ A Hindi/English smart grocery list PWA built for Firebase hosting and improved o
    - `FIREBASE_CONFIG.storageBucket`
    - `FIREBASE_CONFIG.messagingSenderId`
    - `FIREBASE_CONFIG.appId`
-3. Open `y/index.html` in a browser or deploy on Firebase.
+3. Open `public/index.html` in a browser or deploy on Firebase.
+
+The Google Search Console verification tag is already included in `public/index.html`. The Google Analytics tag loads only when `GA_MEASUREMENT_ID` contains a valid `G-...` measurement ID.
 
 ## Security notes
 - Keep `y/env.js` local and do not commit it with real secrets.

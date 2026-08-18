@@ -3,6 +3,31 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="description" content="प्रज्ञासूची - स्मार्ट डिजिटल किराना पर्ची। ऑफलाइन-ready PWA के साथ AI स्मार्ट इनपुट, क्लाउड सिंक और वॉइस समर्थन।">
+    <meta name="keywords" content="grocery list, किराना पर्ची, smart grocery, offline, PWA, AI, Hindi">
+    <meta name="author" content="Pragya Suchi">
+    <meta name="theme-color" content="#ea580c">
+    <meta name="color-scheme" content="light dark">
+    
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="">
+    <meta property="og:title" content="|| प्रज्ञासूची || - Smart Grocery List">
+    <meta property="og:description" content="स्मार्ट और मॉडर्न डिजिटल किराना पर्ची - ऑफलाइन रेडी, AI स्मार्ट इनपुट, क्लाउड सिंक">
+    <meta property="og:image" content="https://cdn-icons-png.flaticon.com/512/3081/3081840.png">
+    
+    <!-- Twitter -->
+    <meta property="twitter:card" content="summary_large_image">
+    <meta property="twitter:url" content="">
+    <meta property="twitter:title" content="|| प्रज्ञासूची || - Smart Grocery List">
+    <meta property="twitter:description" content="स्मार्ट डिजिटल किराना पर्ची - ऑफलाइन, AI समर्थित, क्लाउड सिंक">
+    <meta property="twitter:image" content="https://cdn-icons-png.flaticon.com/512/3081/3081840.png">
+    
+    <!-- Additional SEO -->
+    <meta name="robots" content="index, follow">
+    <meta name="language" content="Hindi, English">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    
     <title>|| प्रज्ञासूची || - Smart Grocery</title>
 
     <script src="https://cdn.tailwindcss.com"></script>
@@ -12,7 +37,21 @@
 
     <link rel="stylesheet" href="./styles.css">
     <script src="./env.js"></script>
+    <meta name="google-site-verification" content="pzO5pVFNKt2UdG_GZmZ9W1HPQ86OjCqcT02eB0QaJSs" />
+    <script>
+        const gaMeasurementId = window.APP_CONFIG?.GA_MEASUREMENT_ID;
+        if (gaMeasurementId && /^G-[A-Z0-9-]+$/i.test(gaMeasurementId)) {
+            const gtagScript = document.createElement('script');
+            gtagScript.async = true;
+            gtagScript.src = `https://www.googletagmanager.com/gtag/js?id=${encodeURIComponent(gaMeasurementId)}`;
+            document.head.appendChild(gtagScript);
 
+            window.dataLayer = window.dataLayer || [];
+            window.gtag = function() { window.dataLayer.push(arguments); };
+            window.gtag('js', new Date());
+            window.gtag('config', gaMeasurementId);
+        }
+    </script>
 </head>
 <body class="text-slate-800">
 
@@ -72,20 +111,20 @@
 
         <div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-4 mb-6 animate-in animate-delay-2">
             <div class="feature-card p-5">
-                <div class="text-sm uppercase tracking-[0.26em] text-slate-500 mb-3">Offline Ready</div>
-                <p class="text-base font-semibold text-slate-900">Installable PWA with service worker caching and faster loads.</p>
+                <div id="featureTitle1" class="text-sm uppercase tracking-[0.26em] text-slate-500 mb-3">ऑफ़लाइन रेडी</div>
+                <p id="featureDesc1" class="text-base font-semibold text-slate-900">इंस्टॉल होने योग्य PWA सर्विस वर्कर कैशिंग और तेज़ लोड के साथ।</p>
             </div>
             <div class="feature-card p-5">
-                <div class="text-sm uppercase tracking-[0.26em] text-slate-500 mb-3">AI Smart Input</div>
-                <p class="text-base font-semibold text-slate-900">Voice and bill scan options to add items quickly and naturally.</p>
+                <div id="featureTitle2" class="text-sm uppercase tracking-[0.26em] text-slate-500 mb-3">AI स्मार्ट इनपुट</div>
+                <p id="featureDesc2" class="text-base font-semibold text-slate-900">वॉइस और बिल स्कैन विकल्प से सामान तेज़ी से जोड़ें।</p>
             </div>
             <div class="feature-card p-5">
-                <div class="text-sm uppercase tracking-[0.26em] text-slate-500 mb-3">Cloud Sync</div>
-                <p class="text-base font-semibold text-slate-900">Google login, save and load your grocery lists securely.</p>
+                <div id="featureTitle3" class="text-sm uppercase tracking-[0.26em] text-slate-500 mb-3">क्लाउड सिंक</div>
+                <p id="featureDesc3" class="text-base font-semibold text-slate-900">Google लॉगिन, अपनी लिस्ट को सुरक्षित रूप से सेव और लोड करें।</p>
             </div>
             <div class="feature-card p-5">
-                <div class="text-sm uppercase tracking-[0.26em] text-slate-500 mb-3">Theme Control</div>
-                <p class="text-base font-semibold text-slate-900">Auto / dark / light mode switching with local preference saved.</p>
+                <div id="featureTitle4" class="text-sm uppercase tracking-[0.26em] text-slate-500 mb-3">थीम कंट्रोल</div>
+                <p id="featureDesc4" class="text-base font-semibold text-slate-900">ऑटो/डार्क/लाइट मोड स्विच और लोकल प्रेफरेंस सेव।</p>
             </div>
         </div>
 
@@ -220,7 +259,7 @@
     };
 
     if(!firebaseConfig.apiKey) {
-        showCustomAlert("Firebase config missing", "Firebase settings are not available. Check y/env.js or the fallback config.", "error");
+        showCustomAlert("Firebase config missing", "Firebase settings are not available. Check public/env.js or the fallback config.", "error");
     }
 
     const app = initializeApp(firebaseConfig);
