@@ -13,6 +13,15 @@
     let phoneConfirmation = null;
     let phoneRecaptcha = null;
 
+    function resetPhoneRecaptcha() {
+        if(phoneRecaptcha) {
+            phoneRecaptcha.clear();
+            phoneRecaptcha = null;
+        }
+        const container = document.getElementById('recaptcha-container');
+        if(container) container.innerHTML = '';
+    }
+
     function initializeFirebase() {
         if(firebaseInitialized) return;
         
@@ -95,6 +104,8 @@
             }
             try {
                 if(!phoneRecaptcha) {
+                    const container = document.getElementById('recaptcha-container');
+                    if(container) container.innerHTML = '';
                     phoneRecaptcha = new firebase.auth.RecaptchaVerifier('recaptcha-container', { size: 'invisible' });
                 }
                 firebase.auth().signInWithPhoneNumber(phoneNumber.trim(), phoneRecaptcha)
@@ -104,6 +115,7 @@
                             phoneConfirmation.confirm(code.trim())
                                 .then((result) => {
                                     phoneConfirmation = null;
+                                    resetPhoneRecaptcha();
                                     window.currentUserName = result.user.phoneNumber || 'User';
                                     updateLoginUI();
                                     saveToCloud(appState);
@@ -113,11 +125,11 @@
                         });
                     })
                     .catch((error) => {
-                        if(phoneRecaptcha) phoneRecaptcha.clear();
-                        phoneRecaptcha = null;
+                        resetPhoneRecaptcha();
                         showCustomAlert('OTP भेजना विफल', error.message, 'error');
                     });
             } catch(error) {
+                resetPhoneRecaptcha();
                 showCustomAlert('OTP विफल', error.message, 'error');
             }
         });
