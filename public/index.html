@@ -103,9 +103,11 @@
                 <button id="loginBtn" onclick="loginWithGoogle()" class="px-4 py-2 bg-slate-800 hover:bg-slate-900 text-white font-semibold rounded-xl shadow-md smooth text-xs flex items-center gap-1.5">
                     <img src="./images/brand/google-mark.svg" alt="Google" class="w-4 h-4 bg-white rounded-full p-0.5"> <span id="loginBtnText">लॉगिन</span>
                 </button>
+                <button id="phoneLoginBtn" onclick="loginWithPhone()" class="px-3 py-2 bg-teal-600 hover:bg-teal-700 text-white font-semibold rounded-xl shadow-md smooth text-xs">📱 OTP</button>
                 <button id="logoutBtn" onclick="logout()" class="hidden px-3 py-2 bg-slate-200 hover:bg-slate-300 text-slate-700 font-semibold rounded-xl smooth text-xs"><span id="logoutBtnText">लॉगआउट</span></button>
             </div>
         </nav>
+        <div id="recaptcha-container" class="absolute left-0 top-0 w-px h-px opacity-0 pointer-events-none" aria-hidden="true"></div>
 
         <!-- Header -->
         <header class="text-center mt-4 mb-8 animate-in animate-delay-2">

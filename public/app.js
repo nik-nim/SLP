@@ -10,6 +10,8 @@
     // ===== FIREBASE AUTH =====
     let firebaseInitialized = false;
     let currentUser = null;
+    let phoneConfirmation = null;
+    let phoneRecaptcha = null;
 
     function initializeFirebase() {
         if(firebaseInitialized) return;
@@ -41,16 +43,19 @@
 
     function updateLoginUI() {
         const loginBtn = document.getElementById('loginBtn');
+        const phoneLoginBtn = document.getElementById('phoneLoginBtn');
         const logoutBtn = document.getElementById('logoutBtn');
         const userInfo = document.getElementById('userInfo');
         
         if(currentUser) {
             loginBtn.classList.add('hidden');
+            phoneLoginBtn.classList.add('hidden');
             logoutBtn.classList.remove('hidden');
             userInfo.classList.remove('hidden');
             userInfo.innerText = `${uiTexts[lang].helloText}, ${window.currentUserName}!`;
         } else {
             loginBtn.classList.remove('hidden');
+            phoneLoginBtn.classList.remove('hidden');
             logoutBtn.classList.add('hidden');
             userInfo.classList.add('hidden');
             window.currentUserName = '';
@@ -75,6 +80,47 @@
             .catch((error) => {
                 showCustomAlert('लॉगिन विफल', error.message, 'error');
             });
+    };
+
+    // Phone OTP Login
+    window.loginWithPhone = function() {
+        if(!firebaseInitialized) {
+            showCustomAlert('त्रुटि', 'Firebase अभी लोड नहीं हुआ है', 'error');
+            return;
+        }
+        showCustomPrompt('मोबाइल OTP', 'देश कोड के साथ नंबर डालें, जैसे +919876543210', '+91...', (phoneNumber) => {
+            if(!/^\+[1-9]\d{7,14}$/.test(phoneNumber.trim())) {
+                showCustomAlert('नंबर गलत है', 'कृपया देश कोड के साथ सही नंबर डालें।', 'error');
+                return;
+            }
+            try {
+                if(!phoneRecaptcha) {
+                    phoneRecaptcha = new firebase.auth.RecaptchaVerifier('recaptcha-container', { size: 'invisible' });
+                }
+                firebase.auth().signInWithPhoneNumber(phoneNumber.trim(), phoneRecaptcha)
+                    .then((confirmationResult) => {
+                        phoneConfirmation = confirmationResult;
+                        showCustomPrompt('OTP डालें', `${phoneNumber.trim()} पर भेजा गया 6 अंकों का OTP डालें।`, '123456', (code) => {
+                            phoneConfirmation.confirm(code.trim())
+                                .then((result) => {
+                                    phoneConfirmation = null;
+                                    window.currentUserName = result.user.phoneNumber || 'User';
+                                    updateLoginUI();
+                                    saveToCloud(appState);
+                                    showCustomAlert('सफल', 'मोबाइल OTP लॉगिन सफल! 🎉', 'success');
+                                })
+                                .catch(() => showCustomAlert('OTP गलत है', 'कृपया सही OTP डालें और फिर कोशिश करें।', 'error'));
+                        });
+                    })
+                    .catch((error) => {
+                        if(phoneRecaptcha) phoneRecaptcha.clear();
+                        phoneRecaptcha = null;
+                        showCustomAlert('OTP भेजना विफल', error.message, 'error');
+                    });
+            } catch(error) {
+                showCustomAlert('OTP विफल', error.message, 'error');
+            }
+        });
     };
 
     // Logout
