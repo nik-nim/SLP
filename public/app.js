@@ -8,13 +8,141 @@
         en: { auto: 'Auto', dark: 'Dark', light: 'Light' }
     };
 
-    // ===== DARK MODE =====
-    let darkForced = localStorage.getItem('darkMode');
+    // ===== FIREBASE AUTH =====
+    let firebaseInitialized = false;
+    let currentUser = null;
+
+    function initializeFirebase() {
+        if(firebaseInitialized) return;
+        
+        if(!window.APP_CONFIG?.FIREBASE_CONFIG?.apiKey) {
+            console.warn('Firebase config not loaded');
+            return;
+        }
+        
+        try {
+            firebase.initializeApp(window.APP_CONFIG.FIREBASE_CONFIG);
+            firebaseInitialized = true;
+            
+            // Monitor auth state
+            firebase.auth().onAuthStateChanged((user) => {
+                currentUser = user;
+                updateLoginUI();
+                if(user) {
+                    window.currentUserName = user.displayName || user.email.split('@')[0];
+                    loadFromCloud();
+                }
+            });
+            
+            console.log('Firebase initialized successfully');
+        } catch(e) {
+            console.error('Firebase init error:', e);
+        }
+    }
+
+    function updateLoginUI() {
+        const loginBtn = document.getElementById('loginBtn');
+        const logoutBtn = document.getElementById('logoutBtn');
+        const userInfo = document.getElementById('userInfo');
+        
+        if(currentUser) {
+            loginBtn.classList.add('hidden');
+            logoutBtn.classList.remove('hidden');
+            userInfo.classList.remove('hidden');
+            userInfo.innerText = `${uiTexts[lang].helloText}, ${window.currentUserName}!`;
+        } else {
+            loginBtn.classList.remove('hidden');
+            logoutBtn.classList.add('hidden');
+            userInfo.classList.add('hidden');
+            window.currentUserName = '';
+        }
+    }
+
+    // Google Login
+    window.loginWithGoogle = function() {
+        if(!firebaseInitialized) {
+            showCustomAlert('त्रुटि', 'Firebase अभी लोड नहीं हुआ है', 'error');
+            return;
+        }
+        
+        const provider = new firebase.auth.GoogleAuthProvider();
+        firebase.auth().signInWithPopup(provider)
+            .then((result) => {
+                window.currentUserName = result.user.displayName || result.user.email.split('@')[0];
+                updateLoginUI();
+                saveToCloud(appState);
+                showCustomAlert('सफल', 'Google लॉगिन सफल! 🎉', 'success');
+            })
+            .catch((error) => {
+                showCustomAlert('लॉगिन विफल', error.message, 'error');
+            });
+    };
+
+    // Logout
+    window.logout = function() {
+        showCustomConfirm(
+            lang === 'hi' ? 'लॉगआउट करें?' : 'Logout?',
+            lang === 'hi' ? 'क्या आप लॉगआउट करना चाहते हैं?' : 'Are you sure?',
+            () => {
+                firebase.auth().signOut().then(() => {
+                    window.currentUserName = '';
+                    updateLoginUI();
+                    showCustomAlert('सफल', lang === 'hi' ? 'लॉगआउट सफल' : 'Logged out', 'success');
+                });
+            }
+        );
+    };
+
+    // Save to Cloud (Firestore)
+    window.saveToCloud = function(data) {
+        if(!currentUser || !firebaseInitialized) return;
+        
+        const db = firebase.firestore();
+        db.collection('users').doc(currentUser.uid).set({
+            email: currentUser.email,
+            displayName: currentUser.displayName,
+            groceryList: data,
+            lastUpdated: new Date()
+        }, { merge: true })
+        .then(() => {
+            console.log('Data saved to cloud');
+        })
+        .catch((error) => {
+            console.error('Cloud save error:', error);
+        });
+    };
+
+    // Load from Cloud (Firestore)
+    window.loadFromCloud = function() {
+        if(!currentUser || !firebaseInitialized) return;
+        
+        const db = firebase.firestore();
+        db.collection('users').doc(currentUser.uid).get()
+            .then((doc) => {
+                if(doc.exists && doc.data().groceryList) {
+                    Object.keys(doc.data().groceryList).forEach(k => {
+                        if(appState[k]) appState[k] = doc.data().groceryList[k];
+                    });
+                    renderCategories();
+                    showCustomAlert('क्लाउड', 'आपकी लिस्ट लोड हो गई', 'success');
+                }
+            })
+            .catch((error) => {
+                console.error('Cloud load error:', error);
+            });
+    };
+
+    // Initialize Firebase when page loads
+    document.addEventListener('DOMContentLoaded', () => {
+        setTimeout(initializeFirebase, 500);
+    });
+    const prefersDark = window.matchMedia('(prefers-color-scheme: dark)');
     const themeBtn = document.getElementById('themeBtn');
     const themeLabel = document.getElementById('themeBtnText');
-    const prefersDark = window.matchMedia('(prefers-color-scheme: dark)');
-    const applyTheme = (mode) => {
-        const systemDark = prefersDark.matches;
+    let darkForced = localStorage.getItem('darkMode');
+    const systemDark = prefersDark.matches;
+
+    function applyTheme(mode) {
         if(mode === 'dark') {
             document.documentElement.classList.add('dark-mode');
             document.documentElement.classList.remove('light-mode');
@@ -467,6 +595,13 @@
     window.renderCategories = function() {
         const container = document.getElementById('categoriesContainer');
         const skeleton = document.getElementById('skeletonContainer');
+        const categoryImages = [
+            './images/categories/vegetables.svg',
+            './images/categories/grains.svg',
+            './images/categories/pulses.svg',
+            './images/categories/dairy.svg',
+            './images/categories/household.svg'
+        ];
         container.innerHTML = '';
         if(skeleton) skeleton.style.display = 'none';
         let currentUnits = units[lang];
@@ -487,7 +622,7 @@
             let headerHTML = `
               <div class="p-4 border-b border-slate-100 flex items-center justify-between cursor-pointer" onclick="toggleCat(this)">
                 <div class="flex items-center gap-3">
-                  <span class="text-2xl">${category.emoji||'📦'}</span>
+                  <img src="${categoryImages[catIdx % categoryImages.length]}" alt="" class="w-12 h-10 object-cover rounded-xl" loading="lazy">
                   <div>
                     <h2 class="text-base font-black text-slate-800 leading-tight">${catName}</h2>
                     <p class="text-xs text-slate-400 mt-0.5">${catItems.length} आइटम${checkedCount > 0 ? ` • <span class="text-orange-500 font-bold">${checkedCount} चुने</span>` : ''}</p>

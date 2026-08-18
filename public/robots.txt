@@ -1,0 +1,5 @@
+User-agent: *
+Allow: /
+Disallow: /private
+
+Sitemap: https://smart-shopp.firebaseapp.com/sitemap.xml

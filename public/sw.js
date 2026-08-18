@@ -4,7 +4,17 @@ const urlsToCache = [
   './',
   './index.html',
   './manifest.json',
-  './sw.js'
+  './sw.js',
+  './images/brand/favicon.svg',
+  './images/brand/logo-192.svg',
+  './images/brand/logo-512.svg',
+  './images/brand/google-mark.svg',
+  './images/categories/vegetables.svg',
+  './images/categories/grains.svg',
+  './images/categories/pulses.svg',
+  './images/categories/dairy.svg',
+  './images/categories/household.svg',
+  './images/og/og-image.svg'
 ];
 
 self.addEventListener('install', event => {
