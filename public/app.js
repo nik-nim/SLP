@@ -1,5 +1,4 @@
-// ===== CONFIG — API keys moved to environment-safe placeholders =====
-    // ⚠️ Security: Move GEMINI_API_KEY to a Firebase Cloud Function in production
+// ===== CONFIG =====
     const GEMINI_API_KEY = window.APP_CONFIG?.GEMINI_API_KEY || localStorage.getItem('GEMINI_API_KEY') || "";
 
     let lang = 'hi';
@@ -923,9 +922,14 @@
         if(!file) return;
         document.getElementById('aiLoadingOverlay').classList.remove('hidden');
         try {
-            if(!GEMINI_API_KEY || GEMINI_API_KEY === "") {
+            if(!GEMINI_API_KEY) {
                 document.getElementById('aiLoadingOverlay').classList.add('hidden');
-                showCustomAlert("API कुंजी गायब है", "कृपया public/env.js में GEMINI_API_KEY जोड़ें।", "error");
+                showCustomAlert("API कुंजी गायब है", "कृपया local public/env.js में GEMINI_API_KEY जोड़ें।", "error");
+                return;
+            }
+            if(!['image/jpeg', 'image/png', 'image/webp'].includes(file.type) || file.size > 5 * 1024 * 1024) {
+                document.getElementById('aiLoadingOverlay').classList.add('hidden');
+                showCustomAlert("फोटो अमान्य है", "कृपया 5 MB से छोटी JPG, PNG या WEBP फोटो चुनें।", "error");
                 return;
             }
             const reader = new FileReader();
@@ -933,7 +937,7 @@
             reader.onload = async function() {
                 const b64 = reader.result.split(',')[1];
                 const body = { contents:[{ parts:[{ text:"You are a grocery list assistant. Read this bill image carefully. Return ONLY a comma-separated list of grocery item names in Hindi. Example: 'चीनी, चाय पत्ती, आटा, दूध'. Only item names, no quantities, no prices, no extra text." }, { inline_data:{ mime_type:file.type, data:b64 } }] }] };
-                const r = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(body) });
+                const r = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${encodeURIComponent(GEMINI_API_KEY)}`, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(body) });
                 const data = await r.json();
                 document.getElementById('aiLoadingOverlay').classList.add('hidden');
                 if(!r.ok) {
