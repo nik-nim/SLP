@@ -40,9 +40,9 @@
     <script src="./env.js"></script>
     
     <!-- Firebase SDK (for authentication & cloud sync) -->
-    <script src="https://www.gstatic.com/firebasejs/10.7.2/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.7.2/firebase-auth.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.7.2/firebase-firestore.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.2/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.2/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.2/firebase-firestore-compat.js"></script>
     
     <meta name="google-site-verification" content="pzO5pVFNKt2UdG_GZmZ9W1HPQ86OjCqcT02eB0QaJSs" />
     <script>
@@ -96,7 +96,7 @@
                     <span class="switch-track"><span class="switch-thumb"></span></span>
                     <span id="themeBtnText">Auto</span>
                 </label>
-                <button id="installAppBtn" class="hidden px-4 py-2 bg-gradient-to-r from-orange-400 to-orange-500 text-white font-bold rounded-xl shadow-lg shadow-orange-500/30 smooth animate-bounce text-xs">📱 Install</button>
+                <button id="installAppBtn" class="hidden px-4 py-2 bg-gradient-to-r from-orange-400 to-orange-500 text-white font-bold rounded-xl shadow-lg shadow-orange-500/30 smooth text-xs">📱 Install</button>
             </div>
             <div class="flex items-center gap-2">
                 <div id="userInfo" class="hidden font-bold text-teal-700 bg-teal-50 px-3 py-2 rounded-xl text-xs border border-teal-100 max-w-[120px] truncate"></div>
@@ -251,128 +251,6 @@
     </div>
 
     <script src="./app.js"></script>
-<script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/12.14.0/firebase-app.js";
-    import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/12.14.0/firebase-auth.js";
-    import { getFirestore, collection, addDoc, getDocs, doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/12.14.0/firebase-firestore.js";
-
-    const firebaseConfig = window.APP_CONFIG?.FIREBASE_CONFIG || {
-        apiKey:"YOUR_FIREBASE_API_KEY",
-        authDomain:"YOUR_FIREBASE_AUTH_DOMAIN",
-        projectId:"YOUR_FIREBASE_PROJECT_ID",
-        storageBucket:"YOUR_FIREBASE_STORAGE_BUCKET",
-        messagingSenderId:"YOUR_FIREBASE_MESSAGING_SENDER_ID",
-        appId:"YOUR_FIREBASE_APP_ID"
-    };
-
-    if(!firebaseConfig.apiKey) {
-        showCustomAlert("Firebase config missing", "Firebase settings are not available. Check public/env.js or the fallback config.", "error");
-    }
-
-    const app = initializeApp(firebaseConfig);
-    const auth = getAuth(app);
-    const db = getFirestore(app);
-    const provider = new GoogleAuthProvider();
-
-    window.saveToCloud = async function(state) {
-        if(!auth.currentUser) return;
-        try { await setDoc(doc(db,"userGroceryLists",auth.currentUser.uid),{ savedList:JSON.stringify(state), lastUpdated:new Date() }); }
-        catch(e) { console.error("Cloud sync error:", e); }
-    };
-    window.loadFromCloud = async function() {
-        if(!auth.currentUser) return;
-        try {
-            const snap = await getDoc(doc(db,"userGroceryLists",auth.currentUser.uid));
-            if(snap.exists()) {
-                let p = JSON.parse(snap.data().savedList);
-                Object.keys(p).forEach(k => { if(appState[k]) appState[k]=p[k]; });
-                window.renderCategories();
-            }
-        } catch(e) { console.error("Cloud load error:", e); }
-    };
-
-    document.getElementById('loginBtn').addEventListener('click', async () => {
-        if(window.location.protocol === 'file:') {
-            showCustomAlert("वॉरनिंग", "Firebase लॉगिन ब्राउज़र पर तभी चलेगा जब आप ऐप को http या https पर चलाएँ।", "error");
-            return;
-        }
-        try {
-            await signInWithPopup(auth, provider);
-        } catch (e) {
-            console.error('Login failed', e);
-            showCustomAlert("Login failed", e.message || "Unable to sign in.", "error");
-        }
-    });
-    document.getElementById('logoutBtn').addEventListener('click', async () => {
-        try {
-            await signOut(auth);
-        } catch (e) {
-            console.error('Logout failed', e);
-            showCustomAlert("Logout failed", e.message || "Unable to sign out.", "error");
-        }
-    });
-
-    document.getElementById('saveCloudListBtn').addEventListener('click', () => {
-        if(!auth.currentUser) return;
-        showCustomPrompt("लिस्ट सेव करें","इस लिस्ट का नाम लिखें:","June Grocery", async (name) => {
-            try {
-                await addDoc(collection(db,"users",auth.currentUser.uid,"savedLists"),{ name, data:JSON.stringify(appState), date:new Date().toLocaleDateString('hi-IN') });
-                showCustomAlert("सफल","✅ लिस्ट सेव हो गई!","success");
-            } catch(e) { console.error(e); }
-        });
-    });
-
-    document.getElementById('loadCloudListBtn').addEventListener('click', async () => {
-        if(!auth.currentUser) return;
-        const container = document.getElementById('savedListsContainer');
-        container.classList.toggle('hidden');
-        const area = document.getElementById('savedListsArea');
-        area.innerHTML = '<div class="text-center py-4"><div class="loader inline-block" style="width:28px;height:28px;border-color:#e2e8f0;border-top-color:#f97316"></div></div>';
-        try {
-            const qs = await getDocs(collection(db,"users",auth.currentUser.uid,"savedLists"));
-            area.innerHTML = '';
-            if(qs.empty) { area.innerHTML='<p class="text-slate-500 font-bold text-sm text-center py-2">कोई पुरानी लिस्ट नहीं मिली।</p>'; return; }
-            qs.forEach(d => {
-                let data = d.data();
-                area.innerHTML += `<div class="flex justify-between items-center bg-slate-50 p-3 rounded-xl border border-slate-200">
-                    <div><p class="font-bold text-slate-800 text-sm">${data.name}</p><p class="text-xs text-slate-400">${data.date}</p></div>
-                    <button class="bg-orange-100 hover:bg-orange-500 hover:text-white text-orange-700 font-bold px-4 py-2 rounded-lg text-sm smooth" onclick="window.loadSpecificList('${data.data.replace(/'/g,"\\'")}')">खोलें</button>
-                </div>`;
-            });
-        } catch(e) { console.error(e); }
-    });
-
-    window.loadSpecificList = function(json) {
-        let p = JSON.parse(json);
-        Object.keys(p).forEach(k => { if(appState[k]) appState[k]=p[k]; });
-        window.renderCategories();
-        document.getElementById('savedListsContainer').classList.add('hidden');
-        showCustomAlert("सफल","पुरानी लिस्ट खुल गई! 🎉","success");
-    };
-
-    onAuthStateChanged(auth, user => {
-        const login = document.getElementById('loginBtn');
-        const logout = document.getElementById('logoutBtn');
-        const save = document.getElementById('saveCloudListBtn');
-        const load = document.getElementById('loadCloudListBtn');
-        const info = document.getElementById('userInfo');
-        if(user) {
-            login.classList.add('hidden'); logout.classList.remove('hidden');
-            save.classList.remove('hidden'); save.classList.add('flex');
-            load.classList.remove('hidden'); load.classList.add('flex');
-            let name = user.displayName ? user.displayName.split(" ")[0] : "User";
-            window.currentUserName = name;
-            info.innerText = `${lang==='hi'?'नमस्ते':'Hello'}, ${name}!`;
-            info.classList.remove('hidden');
-            window.loadFromCloud();
-        } else {
-            login.classList.remove('hidden'); logout.classList.add('hidden');
-            save.classList.add('hidden'); save.classList.remove('flex');
-            load.classList.add('hidden'); load.classList.remove('flex');
-            info.classList.add('hidden'); window.currentUserName = '';
-        }
-    });
-    </script>
     
 </body>
 </html>
